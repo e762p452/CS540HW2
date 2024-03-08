@@ -1,0 +1,72 @@
+//Eddie Allen E762P452
+
+#include <iostream>
+#include <vector>
+#include <ctime>
+#include <cstdlib>
+using namespace std;
+
+// Process class 
+class Process {
+private:
+    int pid;
+    int lottery;
+public:
+    Process(int pid, int lottery) : pid(pid), lottery(lottery) {}  // initialize process with ID and tickets
+    int getpid() const {   // Get for PID
+        return pid;
+    }
+    int getlottery() const {  // Gets number of tickets
+        return lottery;
+    }
+};
+
+class Scheduler {
+private:
+    vector<Process> processes;
+public:
+    void addProcess(const Process& process) {
+        processes.push_back(process);
+    }
+    void allocatelottery() {
+        int totalTickets = 0;
+
+        for (const Process& process : processes) {      // Calculate how many tickets there are
+            totalTickets += process.getlottery();
+        }
+        // assign ticket to process
+        for (Process& process : processes) {
+            double proportion = static_cast<double>(process.getlottery()) / totalTickets;  // Calculate the number of tickets
+            process = Process(process.getpid(), static_cast<int>(proportion * 100)); // Assign tickets depending on total number of tickets
+        }
+    }
+    // Method to select the winner 
+    Process selectWinner() const {
+        int randomNumber = rand() % 100 + 1;
+
+        // Find the process whose ticket range contains the random number
+        int cumulativeTickets = 0;
+        for (const Process& process : processes) {
+            cumulativeTickets += process.getlottery();
+            if (randomNumber <= cumulativeTickets) {
+                return process; // Return the winning process
+            }
+            return processes.back(); // Generate error message if there is one
+        }
+    };
+
+
+    int main() {
+        srand(time(NULL));
+        Scheduler scheduler;
+        scheduler.addProcess(Process(1, 5));
+        scheduler.addProcess(Process(2, 10));
+        scheduler.addProcess(Process(3, 45));
+        scheduler.allocatelottery();
+        // Select winner
+        Process winner = scheduler.selectWinner();
+        // Display the winner
+        cout << "Process " << winner.getpid() << " wins the lottery!" << endl;
+
+        return 0;
+    }
